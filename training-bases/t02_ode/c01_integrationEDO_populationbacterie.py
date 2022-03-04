@@ -1,8 +1,9 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Fri Mar  4 15:27:52 2022
 
-This is a temporary script file.
+@author: julienreveillon
 """
 
 # librairie
@@ -10,41 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 
-
-
 ### ETAPE 1
-
-# population bacterie
-def deriv_equaDiff(POP, t, G):
-  dPOPdt = np.log(2)/G * POP
-  return dPOPdt
-
-# programme principal
-if __name__ == "__main__":
-    #
-    #
-
-    POP_0 = 100
-    G = 4
-    t = np.arange(0, 100, 1)
-
-    # Résolution de l'équation différentielle avec ode 
-    y = odeint(deriv_equaDiff, POP_0, t, args = (G,) )
-
-    plt.figure(0)
-    plt.xlabel("Time - hours",fontsize=14)
-    plt.ylabel("Population",fontsize=14)
-    plt.plot(t, y)
-    plt.title('Bacteries population with G=4')
-    
-"""
-### ETAPE 2
-
-# population bacterie
-# https://dridk.me/equation-differentielle.html
-def deriv_equaDiff(POP, t, G):
-  dPOPdt = np.log(2)/G * POP
-  return dPOPdt
 
 
 def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfichier=''):
@@ -73,17 +40,33 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
         plt.savefig(nomfichier)
     plt.show() 
 
+# population bacterie
+def deriv_popBacteria(POP, t, G):
+  dPOPdt = np.log(2)/G * POP
+  return dPOPdt
+
+
 # programme principal
 if __name__ == "__main__":
     #
+    # Conditins de calculs
+    POP_0 = 100
+    G     = 4
     #
-
-    POP_0   = 100
-    G       = 4
-    t       = np.arange(0, 100, 1)
-
+    t = np.arange(0, 101, 1)
+    #
     # Résolution de l'équation différentielle avec ode 
-    y = odeint(deriv_equaDiff, POP_0, t, args = (G,) )
+    POP  = odeint(deriv_popBacteria, POP_0, t, args = (G,) )
+    #
+    #
+    G2   = 3.5
+    POP2 = odeint(deriv_popBacteria, POP_0, t, args = (G2,) )
+    
+    
+    #
+    PlotFonction(t,POP,0,xlabel='time',ylabel='number of bacteries',titre='bacteries population',nomcourbe='G = 4')
+    PlotFonction(t,POP2,0,nomcourbe='G = 3.5')
+    
+    
 
-    PlotFonction(t,y,0,xlabel='time',ylabel='number of bacteries',titre='bacteries population with G=4')
-"""
+

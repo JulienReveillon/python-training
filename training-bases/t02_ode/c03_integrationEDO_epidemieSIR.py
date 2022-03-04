@@ -1,27 +1,15 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Spyder Editor
+Created on Fri Mar  4 16:34:50 2022
 
-This is a temporary script file.
+@author: julienreveillon
 """
-
-
 
 # librairie
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-
-def deriv(y, t, beta, gamma):
-  S,I,R = y 
-  # Description des 3 equations differentielles 
-  dSdt = -S * I  * beta 
-  dIdt = S * I  * beta  - gamma * I 
-  dRdt = gamma * I 
-  # systeme
-  dydt = [dSdt, dIdt, dRdt]
-  #
-  return dydt 
 
 
 def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfichier=''):
@@ -48,27 +36,34 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
     #
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show()  
+    plt.show() 
+    
+    
+### systeme a resoudre
+def deriv_SIR(SYS, t, beta, gamma):
+    S,I,R = SYS
+    dSYSdt = [
+       -S * I * beta,
+        S * I * beta  - gamma * I ,
+        gamma * I 
+        ]
+    return dSYSdt
+
+def resolution_SIR(t,S0,I0,R0,beta,gamma):
+    SYS0     = [S0,I0,R0]
+    solution = odeint(deriv_SIR, SYS0, t, args = (beta,gamma,) )
+    return solution[:,0],solution[:,1],solution[:,2]
 
 # programme principal
 if __name__ == '__main__':
-    # Au temps t0,  70% sains, 30% infécté, 0 guéri 
-    y0 = [0.7, 0.3, 0]
+    #
+    t = np.arange(0, 30, 1)   #de 0 a 30 jours
+    #
+    S,I,R = resolution_SIR(t,0.8, 0.2,0,0.5,0.142)
+    PlotFonction(t,S,0,xlabel='time',ylabel='percents',titre='S,I,R evolution',nomcourbe='Suceptible')
+    PlotFonction(t,I,0,nomcourbe='Infectious')
+    PlotFonction(t,R,0,nomcourbe='Recovered')
+    
 
-    # Evolution sur 28 jours 
-    t = np.linspace(0, 28)
 
-    # Paramètres du modèle 
-    beta    = 0.5
-    gamma   =  0.1
 
-    # Resolution des équations differentielles 
-    solution = odeint(deriv, y0, t, args = (beta, gamma))
-    S        = solution[:,0]
-    I        = solution[:,1]
-    R        = solution[:,2]
-
-    PlotFonction(t,S,0,xlabel='time',ylabel='Population proportion',titre='SIR with beta = 0.5 , gamma = 0.1',nomcourbe='Susceptible')
-    plt.axis([0, max(t), 0, 1])
-    PlotFonction(t,I,0,nomcourbe='Susceptible')
-    PlotFonction(t,R,0,nomcourbe='Recovered',nomfichier='epidemieSIR.pdf')
