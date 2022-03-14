@@ -11,14 +11,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # definition de fonction
-def MonSinus(axeX,period):
-    yFunc  = []
-    for x in axeX:
-        y = np.sin((2*np.pi/period)*x)
-        yFunc.append(y)    
-    #    
-    return yFunc
 
+# ecrire ici  vos fonctions
+
+def CroissanceElephant(time,N0=100,r=0.15,K=7500):
+    popElephants  = []
+    for t in time:
+        pop = K/(N0+np.exp(-r*t)*(K-N0))
+        popElephants.append(pop)    
+    #    
+    return popElephants
 
 def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfichier=''):
     #
@@ -49,21 +51,18 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
 # programme principal
 if __name__ == "__main__":
     
-    # axe x
-    axeX = np.linspace(-10,10,200)
-    
-    # la fonction
-    yPeriod4 = MonSinus(axeX,4)
-    yPeriod8 = MonSinus(axeX,8)
-    yPeriod2 = MonSinus(axeX,2)
-    
+# ecrire ici  votre programme principal
+# axe x
+    time = np.linspace(0,100,500)
+    pop  = CroissanceElephant(time)
+    pop2 = CroissanceElephant(time,N0=100,r=0.05,K=6500)
+    pop3 = CroissanceElephant(time,N0=100,r=0.01,K=3000)
+    PlotFonction(time,pop,0,xlabel='years',ylabel='population',titre='Elephant population evolution',nomcourbe='r=0.15 - K=7500')
+    PlotFonction(time,pop2,0,nomcourbe='r=0.1 - K=6500')
+    PlotFonction(time,pop3,0,nomcourbe='r=0.05 - K=3000',nomfichier='elephants_niveau1.pdf')
 
-        
-    # tracer la fonction
-    PlotFonction(axeX,yPeriod4,0,'x','y(x)','fonction sinus',nomcourbe='period 4')
-    PlotFonction(axeX,yPeriod2,0,nomcourbe='period 2')
-    PlotFonction(axeX,yPeriod8,0,nomcourbe='period 8',nomfichier='sinx.pdf')
-    plt.show()
+# derniere ligne
+    plt.show() #affichage ecran graphes
     
     
     

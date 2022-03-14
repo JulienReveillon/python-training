@@ -31,7 +31,7 @@ def PlotFonction(x,y,numfigure,xlabel,ylabel,titre,nomcourbe='',nomfichier=''):
     plt.grid(True) 
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show()    
+  
 
 
 # programme principal
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     # tracer la fonction
     PlotFonction(axeX,yPeriod4,0,'x','y(x)','fonction sinus',nomcourbe='period 4',nomfichier='sinx.pdf')    
     PlotFonction(axeX,yPeriod8,0,'x','y(x)','fonction sinus',nomcourbe='period 8',nomfichier='sinx.pdf')
-    
+    plt.show()      
     
     
     
