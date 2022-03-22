@@ -36,7 +36,6 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
     #
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show() 
     
     
 ### systeme a resoudre
@@ -63,7 +62,7 @@ if __name__ == '__main__':
     PlotFonction(t,S,0,xlabel='time',ylabel='percents',titre='S,I,R evolution',nomcourbe='Suceptible')
     PlotFonction(t,I,0,nomcourbe='Infectious')
     PlotFonction(t,R,0,nomcourbe='Recovered')
-    
+    plt.show()
 
 
 

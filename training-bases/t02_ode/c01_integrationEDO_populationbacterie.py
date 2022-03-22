@@ -38,7 +38,7 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
     #
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show() 
+
 
 # population bacterie
 def deriv_popBacteria(POP, t, G):
@@ -66,7 +66,7 @@ if __name__ == "__main__":
     #
     PlotFonction(t,POP,0,xlabel='time',ylabel='number of bacteries',titre='bacteries population',nomcourbe='G = 4')
     PlotFonction(t,POP2,0,nomcourbe='G = 3.5')
-    
+    plt.show()     
     
 
 

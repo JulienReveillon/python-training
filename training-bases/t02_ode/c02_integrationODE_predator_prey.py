@@ -36,7 +36,6 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
     #
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show() 
     
 ### systeme
 def deriv_pred_prey(SYS, t, a, b, c, d):
@@ -69,7 +68,7 @@ if __name__ == "__main__":
 
     PlotFonction(t,prey2,0,xlabel='time',ylabel='population',titre='evolution population',nomcourbe='prey -  a = 4.22')
     PlotFonction(t,pred2,0,nomcourbe='pred -  a = 4.22')    
-    
+    plt.show()
     
     
 

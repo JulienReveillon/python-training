@@ -1,4 +1,4 @@
-o# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 Spyder Editor
 
@@ -47,7 +47,6 @@ def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfich
     #
     if nomfichier:
         plt.savefig(nomfichier)
-    plt.show()  
 
 
 # programme principal
@@ -75,3 +74,4 @@ if __name__ == '__main__':
     PlotFonction(t,E,0,nomcourbe='Exposed')
     PlotFonction(t,I,0,nomcourbe='Susceptible')
     PlotFonction(t,R,0,nomcourbe='Recovered',nomfichier='epidemieSAIR.pdf')
+    plt.show()  
