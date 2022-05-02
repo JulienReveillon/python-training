@@ -7,6 +7,35 @@ Created on Mon Apr 25 16:14:46 2022
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
+
+
+def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfichier=''):
+    #
+    plt.figure(numfigure)
+    plt.grid(True) 
+    #
+    if nomcourbe: # plot with label
+        plt.plot(x,y,label=nomcourbe)
+    else:     # plot without label
+        plt.plot(x,y)
+    #
+    if xlabel:
+        plt.xlabel(xlabel,fontsize=14)
+    #
+    if ylabel:
+        plt.ylabel(ylabel,fontsize=14)
+    #
+    if nomcourbe:
+        plt.legend(loc='best')
+    #
+    if titre:
+        plt.title(titre)
+    #
+    if nomfichier:
+        plt.savefig(nomfichier)
+        
+        
 
 def C2K(TC):
     return TC+273.15
@@ -19,7 +48,7 @@ def initWallRoom(roomDim):
     # wall definition
     wallRoom = []
     #format : 'name',surface,mode,R (resistance to heat transfer)
-    wallR = 1.25   # resitance to heat transfer  : here poor resistance
+    wallR = 1.599e-6  # resitance to heat transfer  : here poor resistance
     #wallR = 10.
     surfPH = roomDim[1]*roomDim[2]
     surfPL = roomDim[0]*roomDim[1]
@@ -47,8 +76,17 @@ def initWallRoom(roomDim):
 
 def initDimRoom(L,P,H):
     roomDim = [L,P,H]
-    roomDim.append(L*P*H)
-    return roomDim
+    roomVol =  L*P*H
+    return roomDim, roomVol
+
+
+def lossWallRoom(Tin,Text,wallRoom):
+    #
+    QWallLoss = 0
+    for i in range(len(wallRoom)):
+        QWallLoss += (Text-Tin)*wallRoom[i][3]   
+    #
+    return QWallLoss
 
 
 def roomHeatingBase():
@@ -56,20 +94,33 @@ def roomHeatingBase():
     Compute the temperature evolution in a room with heating device + cold external atmosphere
     """
     # dimension of the room (LxPxHxVol)
-    roomDim  = initDimRoom(4.,6.,3.)
-    wallRoom = initWallRoom(roomDim)
+    roomDim, roomVol  = initDimRoom(4.,6.,3.)
+    wallRoom          = initWallRoom(roomDim)
     
     tempCout  = 10     # [C]
     tempCinit = 15     # [C]
     rhoAir    = 1.2    # [Kg/m^3]
-    cpAir     = 1005.0 # [J/kg.K]
-    print(wallRoom)
-    timeStep = 0.1     # heure
-    timeEnd  = 10      # heure
-    time     = np.arrange(0,timeEnd,timeStep)
-    nIter    = len(time)
-    tempCroom=[tempCinit]
-    for t in time:
+    cvAir     = 1005   # [J/kg.K]
+    Qheat     = 20   # [J/s]
+    timeStep  = 0.1     # heure
+    timeEnd   = 10000      # heure
+    time      = np.arange(0,timeEnd,timeStep)
+    nIter     = len(time)
+    tempCroom    = np.zeros(nIter)
+    tempCroom[0] = tempCinit
+    for i in range(1,nIter):
+        tempC        = tempCroom[i-1]
+        QWallLoss0   = lossWallRoom(tempC,tempCout,wallRoom)
+        RHS0         = (Qheat+QWallLoss0)/(roomVol*rhoAir*cvAir)
+        tempC1       = tempC+0.5*timeStep*RHS0
+        QWallLoss1   = lossWallRoom(tempC1,tempCout,wallRoom)
+        RHS1         = (Qheat+QWallLoss1)/(roomVol*rhoAir*cvAir)
+        tempCroom[i] = tempC + timeStep*RHS1
+        
+    PlotFonction(time,tempCroom,0,xlabel='time',ylabel='temperature',titre='room temperature')
+       
+        
+        
         
         
     #https://github.com/Denzo77/room_heating_model/blob/master/room_model.py
