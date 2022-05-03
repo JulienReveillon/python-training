@@ -8,6 +8,7 @@ Created on Mon Apr 25 16:14:46 2022
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import aircurtain_parameters as ac
 
 
 def PlotFonction(x,y,numfigure,xlabel='',ylabel='',titre='',nomcourbe='',nomfichier=''):
@@ -43,49 +44,16 @@ def C2K(TC):
 def K2C(TK):
     return TK-273.15
 
-def initWallRoom(roomDim,wallU=0.4):
-    # wallU overall heat loss coefficient u : W/(m^2*K)
-    # wall definition
-    wallRoom = []
-    #format : 'name',surface,mode,U (resistance to heat transfer)
-    #wallR = 10.
-    surfPH = roomDim[1]*roomDim[2]
-    surfPL = roomDim[0]*roomDim[1]
-    surfHL = roomDim[0]*roomDim[2]
-    # surf*wallR = wall conductance : Thermal conductance of room walls. Equivalent to U-value [W/K]
+def initDimRoom(L,P,H,wallU=0.4):
+    roomDim     = [L,P,H]
+    roomVol     =  L*P*H
+    roomS       = 0  # surface with exchange with exterior (including ground minus door)
+    # front and back
+    roomS = L*H*2+P*H*2+P*L*2
+    roomR = 1/(roomS*wallU)
     
-    wall = ['front',surfHL,wallU,surfHL*wallU]
-    wallRoom.append(wall)
-    wall = ['back',surfHL,wallU,surfHL*wallU]
-    wallRoom.append(wall)
-    wall = ['side1',surfPH,wallU,surfPH*wallU]
-    wallRoom.append(wall)
-    wall = ['side2',surfPH,wallU,surfPH*wallU]
-    wallRoom.append(wall)
-    wall = ['top',surfPL,wallU,surfPL*wallU]
-    wallRoom.append(wall)
-    wall = ['bottom',surfPL,0,0]  # sol adiabatique
-    wallRoom.append(wall)
-    
-    # Thermal conductance is the time rate of steady state heat flow through a 
-    # unit area of a material or construction induced by a unit temperature 
-    # difference between the body surfaces, in W/m2⋅K.
-    
-    return wallRoom
+    return roomDim, roomVol, roomR
 
-def initDimRoom(L,P,H):
-    roomDim = [L,P,H]
-    roomVol =  L*P*H
-    return roomDim, roomVol
-
-
-def lossWallRoom(Tin,Text,wallRoom):
-    #
-    QWallLoss = 0
-    for i in range(len(wallRoom)):
-        QWallLoss += (Text-Tin)*wallRoom[i][3]   
-    #
-    return QWallLoss
 
 def thermoRun(tempKroom,thermoFlag,thermoTempKAim,thermoTemp_dT):
     ind_lastTemp = len(tempKroom)-1
@@ -110,46 +78,43 @@ def thermoRun(tempKroom,thermoFlag,thermoTempKAim,thermoTemp_dT):
     
     return thermoRunFLag
 
+"""
+def dSYSdT(SYS, t, QConstantHeating_t, ACMassFlow_t):
+    # system :
+    # 1- dTin/dt
+    # 2- dQac/dt
+    Tin, Qac = SYS
+    #
+    QWallLoss0     = (tempKOut-Tin)/roomR    
+    QBalance0      = QConstantHeating_t+QWallLoss0+QACgain0
+    RHS0           = QBalance0/(roomVol*ac.rhoAir*ac.cvAir)
+    
+    return SYS
+"""
 
-def roomHeatingBase():
+
+
+
+def roomThermaModeling():
     """
     Compute the temperature evolution in a room with heating device + cold external atmosphere
     """
-    #
-    # Constant data
-    #
-    rhoAir      = 1.2    # [Kg/m^3]
-    cvAir       = 718   # [J/kg.K]
-    cpAir       = 1005
+
     #
     # Physical data
     # 
     ###################################################
     # temperature : outside and inital temp
-    tempCOut    = 10     # [C]
-    tempCInit   = 12     # [C]
-    tempKOut    = C2K(tempCOut)     # [K]
-    tempKInit   = C2K(tempCInit)    # [K]    
+
+    tempKOut          = C2K(ac.tempCOut)     # [K]
+    tempKInit         = C2K(ac.tempCInit)    # [K]    
     # dimension of the room (LxPxHxVol)
-    roomDim, roomVol  = initDimRoom(4.,6.,3.)
-    wallRoom          = initWallRoom(roomDim,wallU=0.5)
-    # heating devices
-    # constant heating (electric coil), =0 if none
-    QConstantHeating  = 0   # [W] constantHeating : constant heating device, no air circulation
-    #
-    tempCACOut        = 25  
-    tempKACOut        = C2K(tempCACOut)   # [K]
-    ACTemp_dT         = 5
-    ACMassFlow        = 1 # kg of air/sec = 0 if no Air Curtain
-    #ACmode            = 'constant_dT'
-    ACmode            = 'constant_Tout'
-    #
-    #
-    thermoFlag        = True
-    thermoTempCAim    = 18
-    thermoTemp_dT     = 5
-    thermoTempKAim    = C2K(thermoTempCAim)
-    #
+    roomDim, roomVol,roomR  = initDimRoom(ac.larg,ac.prof,ac.haut,ac.overallRT)
+
+    # unit conversion
+    tempKACOut        = C2K(ac.tempCACOut)   # [K]
+    thermoTempKAim    = C2K(ac.thermoTempCAim)
+
     
     ###################################################
     #
@@ -174,27 +139,27 @@ def roomHeatingBase():
         #
         # THermostat on or off ?
         #
-        thermoRunFLag = thermoRun(tempKroom[:i-1],thermoFlag,thermoTempKAim,thermoTemp_dT)
+        thermoRunFLag = thermoRun(tempKroom[:i-1],ac.thermoFlag,thermoTempKAim,ac.thermoTemp_dT)
         #
         if thermoRunFLag:
-            QConstantHeating_t = QConstantHeating
-            ACMassFlow_t       = ACMassFlow
+            QConstantHeating_t = ac.QConstantHeating
+            ACMassFlow_t       = ac.ACMassFlow
         else: # shut down heating system
             QConstantHeating_t = 0
             ACMassFlow_t       = 0           
         #
         # air temperature equation
-        QWallLoss0     = lossWallRoom(tempK0,tempKOut,wallRoom)     # tempCOut constant
+        QWallLoss0     = (tempKOut-tempK0)/roomR    
         QBalance0      = QConstantHeating_t+QWallLoss0+QACgain0
-        RHS0           = QBalance0/(roomVol*rhoAir*cvAir) 
+        RHS0           = QBalance0/(roomVol*ac.rhoAir*ac.cvAir) 
         tempK1         = tempK0+0.5*timeStep*RHS0
         #
         # air curtain equation
         if ACMassFlow_t>0 : #air curtain is ON
-            if ACmode=='constant_dT':
-                RHS_AC0 = ACMassFlow_t*cpAir*ACTemp_dT
-            elif ACmode=='constant_Tout':
-                RHS_AC0 = ACMassFlow_t*cpAir*(tempKACOut-tempK0)
+            if ac.ACmode=='constant_dT':
+                RHS_AC0 = ACMassFlow_t*ac.cpAir*ac.ACTemp_dT
+            elif ac.ACmode=='constant_Tout':
+                RHS_AC0 = ACMassFlow_t*ac.cpAir*(tempKACOut-tempK0)
             else:
                 print('Error ACmode')
                 sys.exit()
@@ -205,17 +170,17 @@ def roomHeatingBase():
         # 
         # second stage RK2
         # air temperature equation
-        QWallLoss1     = lossWallRoom(tempK1,tempKOut,wallRoom)
+        QWallLoss1     = (tempKOut-tempK1)/roomR
         QBalance1      = QConstantHeating_t+QWallLoss1+QACgain1
-        RHS1           = QBalance1/(roomVol*rhoAir*cvAir) 
+        RHS1           = QBalance1/(roomVol*ac.rhoAir*ac.cvAir) 
         tempKroom[i]   = tempK0 + timeStep*RHS1
         # air curtain equation
         if ACMassFlow_t>0 : #air curtain is ON
-            if ACmode=='constant_dT':
-                RHS_AC1    = ACMassFlow_t*cpAir*ACTemp_dT
-            elif ACmode=='constant_Tout':
-                RHS_AC1    = ACMassFlow_t*cpAir*(tempKACOut-tempK1)
-            else:
+            if ac.ACmode=='constant_dT':
+                RHS_AC1    = ACMassFlow_t*ac.cpAir*ac.ACTemp_dT
+            elif ac.ACmode=='constant_Tout':
+                RHS_AC1    = ACMassFlow_t*ac.cpAir*(tempKACOut-tempK1)
+            else:  
                 print('Error ACmode')
                 sys.exit()
             QACgain[i] = QACgain1+timeStep*RHS_AC1
@@ -243,5 +208,5 @@ def roomHeatingBase():
 
 
 if __name__ == "__main__":
-    roomHeatingBase()
+    roomThermaModeling()
 
