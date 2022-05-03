@@ -233,6 +233,7 @@ def roomHeatingBase():
         
     #https://github.com/Denzo77/room_heating_model/blob/master/room_model.py
     #https://www.mathworks.com/help/simulink/ug/model-a-house-heating-system.html
+    #https://www.engineeringtoolbox.com/air-curtains-d_129.html
 
 
 
