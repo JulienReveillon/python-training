@@ -10,9 +10,28 @@ Created on Tue May  3 17:52:30 2022
 # Conditions d'utilisation ACU (Air Curtain Units : Eurovent)
 # P03_calculations-Eurovent REC 16-1 - Recommendation for Air Curtain unit - First Edition - 2016 - EN
 # 
-#
 
+# Conditions
+Hdoor           = 3   # [m]
+Wdoor           = 2   # [m]
+warmCellTemp    = 15  # [C] 
+coldCellTemp    = 2   # [C]
+deltaT          = 18  # [C]
+deltaP          = 0   # [Pa]
+windLoad        = 2   # [m/s]
   
+
+# Test Room
+coldCellW       = 4
+coldCellL       = 5
+coldCellH       = 4
+coldCellVol     = coldCellW*coldCellL*coldCellH
+warmCellW       = 4
+warmCellL       = 5
+warmCellH       = 4
+warmCellVol     = warmCellW*warmCellL*warmCellH
+# Wall insulation 
+overallU        = 0.4 # [W/m2⋅K] (max 0.51)
 
 # temperature data
 tempCOut       = 10 # [C] outside constant temperature
